@@ -1,0 +1,74 @@
+:root {
+    /* Light theme */
+    /* --white: #ffffffff; */
+    --bud-green: #7fbd7bff;
+    --slimy-green: #1f9416ff;
+    --fern-green: #397335ff;
+    --light-theme-button: rgb(221, 221, 221);
+    /* Dark theme */
+    /* --black: #000000ff; */
+    --lime-green: #0dc900ff;
+    --dark-pastel-green: #4cb944ff;
+    --dark-theme-button: #FFF;
+}
+.dark-theme {
+    background-color: rgb(31, 31, 31);
+    color: var(--lime-green);
+}
+
+.light-theme {
+    background-color: rgb(199, 199, 199);
+    color: var(--slimy-green);
+}
+
+body.dark-theme input {
+    border-bottom: 2px solid var(--lime-green);
+}
+
+body.dark-theme input:focus {
+    color: rgb(122, 255, 122);
+}
+
+body.light-theme input {
+    border-bottom: 2px solid var(--lime-green);
+}
+
+body.light-theme input:focus {
+    color: #397335ff;
+}
+
+body.dark-theme button {
+    background: limegreen;
+    border-radius: 10px;
+    border: none;
+}
+
+button#toggle-theme {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+    height: 40px;
+    width: 40px;
+    border-radius: 100%;
+    border: none;
+    outline: none;
+    background-color: rgb(221, 221, 221);
+}
+
+button img {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    text-align: center;
+    font-size: 20px;
+    margin-top: 35vh;
+}
+
+input {
+    margin: 20px;
+    background: none;
+    border: none;
+    outline: none;
+}
