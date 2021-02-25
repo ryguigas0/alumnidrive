@@ -5,35 +5,54 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/arquivos.css">
     <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/arquivos.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>HD Virtual ++ - Arquivos</title>
+    <script src="../js/search.js" defer>
+    </script>
     <script src="../js/theme-switch.js" defer></script>
 </head>
 
 <body class="dark-theme">
+    <div class="search-box">
+        <input class="search-text" type="text" placeholder="Pesquisar nessa pasta...">
+        <a class="search-btn" href="#">
+            <span class="material-icons">
+                search
+            </span>
+        </a>
+    </div>
+
     <button id="toggle-theme" onclick="switchThemes()">
         <img src="../icons/lightbulb-on.svg" id="theme-icon" alt="Tema claro">
     </button>
 
-    <div class="pesquisa">
-        <img src="../icons/search.svg" alt="Lupa">
-        <input type="text" placeholder="/folder1/folder2/folder3">
-    </div>
-    <div class="item">
-        <img src="../icons/folder.svg" class="item-icon" alt="Folder"> folderA
-    </div>
-    <div class="item">
-        <img src="../icons/folder.svg" class="item-icon" alt="Folder"> folderB
-    </div>
-    <div class="item">
-        <img src="../icons/file.svg" class="item-icon" alt="Arquivo"> arquivoA.txt
-    </div>
-    <div class="item">
-        <img src="../icons/file.svg" class="item-icon" alt="Arquivo"> arquivoB.txt
-    </div>
-    <div class="item">
-        <img src="../icons/link.svg" class="item-icon" alt="Link"> link.lnk
+    <div class="items">
+        <div class="item">
+            <span class="material-icons">
+                folder
+            </span>
+            <div class="name">
+                folderA
+            </div>
+        </div>
+        <div class="item">
+            <span class="material-icons">
+                description
+            </span>
+            <div class="name">
+                arquivoA.txt
+            </div>
+        </div>
+        <div class="item">
+            <span class="material-icons">
+                link
+            </span>
+            <div class="name">
+                link.lnk
+            </div>
+        </div>
     </div>
 </body>
 

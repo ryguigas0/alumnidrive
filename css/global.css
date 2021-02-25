@@ -1,46 +1,46 @@
 :root {
     /* Light theme */
-    /* --white: #ffffffff; */
-    --bud-green: #7fbd7bff;
-    --slimy-green: #1f9416ff;
-    --fern-green: #397335ff;
-    --light-theme-button: rgb(221, 221, 221);
+    --light-theme-color: #2890b9;
+    --light-theme-color-darker: #2589b1;
+    --light-theme-background: #d8d7d7;
+
     /* Dark theme */
-    /* --black: #000000ff; */
-    --lime-green: #0dc900ff;
-    --dark-pastel-green: #4cb944ff;
-    --dark-theme-button: #FFF;
+    --dark-theme-color: #0dc900ff;
+    --dark-theme-color-darker: #0dc900ff;
+    --dark-theme-background: #1f1f1f;
 }
 .dark-theme {
-    background-color: rgb(31, 31, 31);
-    color: var(--lime-green);
+    background-color:var(--dark-theme-background) ;
+    color: var(--dark-theme-color);
 }
 
 .light-theme {
-    background-color: rgb(199, 199, 199);
-    color: var(--slimy-green);
+    background-color: var(--light-theme-background);
+    color: var(--light-theme-color);
 }
 
 body.dark-theme input {
-    border-bottom: 2px solid var(--lime-green);
+    border-bottom: 2px solid var(--dark-theme-color);
 }
 
 body.dark-theme input:focus {
-    color: rgb(122, 255, 122);
+    color: var( --dark-theme-color-darker);
 }
 
 body.light-theme input {
-    border-bottom: 2px solid var(--lime-green);
+    border-bottom: 2px solid var(--light-theme-color);
 }
 
 body.light-theme input:focus {
-    color: #397335ff;
+    color: var(--light-theme-color-darker);
 }
 
 body.dark-theme button {
-    background: limegreen;
-    border-radius: 10px;
-    border: none;
+    background: var(--dark-theme-color);
+}
+
+body.light-theme button {
+    background: var(--light-theme-color);
 }
 
 button#toggle-theme {
@@ -53,6 +53,11 @@ button#toggle-theme {
     border: none;
     outline: none;
     background-color: rgb(221, 221, 221);
+}
+
+button{
+    border-radius: 10px;
+    border: none;
 }
 
 button img {
