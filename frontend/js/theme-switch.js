@@ -5,10 +5,10 @@ var themeIcn = document.querySelector("#theme-icon")
 function switchThemes() {
     if(isDarkTheme){
         body.className = "light-theme"
-        themeIcn.src = "../icons/lightbulb-off.svg"
+        themeIcn.src = "frontend/icons/lightbulb-off.svg"
     } else {
         body.className = "dark-theme"
-        themeIcn.src = "../icons/lightbulb-on.svg"
+        themeIcn.src = "frontend/icons/lightbulb-on.svg"
     }
     isDarkTheme = !isDarkTheme
 }

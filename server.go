@@ -4,7 +4,7 @@ import (
 	"hd-virtual++/filefinder"
 	"html/template"
 	"log"
-	"path/filepath"
+	fp "path/filepath"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -32,7 +32,9 @@ func main() {
 	// }))
 
 	app.Use(logger.New())
-	app.Static("/", "./frontend")
+	app.Static("/frontend", "./frontend")
+	app.Static("/icons", "./frontend/icons")
+	app.Static("/download", "./uploads")
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		if c.FormValue("auth") == "false" {
@@ -42,33 +44,36 @@ func main() {
 	})
 
 	app.Get("/arquivos/*", func(c *fiber.Ctx) error {
-		fileNames, err := filefinder.FindFiles(filepath.Join("./uploads", c.Params("*")))
+		filePath := c.Params("*")
+		fileNames, err := filefinder.FindFiles("uploads/" + filePath)
 		if err != nil {
-			log.Fatalf("ERROR FINDING FILES: %v\n", err)
-			return c.SendFile("./frontend/html/fileNotFound.html")
+			log.Fatalf("ERROR: FILE FINDER: %v\n", err)
+			return c.SendFile("frontend/html/fileNotFound.html")
 		}
 		htmlStr := ""
 		for _, fileName := range fileNames {
-			log.Output(1, "FOUND: "+fileName)
 
-			fileType := ""
-			if len(strings.Split(fileName, ".")) == 1 {
-				fileType = "folder"
-			} else {
+			//Default file is a folder
+			fileLink := fp.Join("arquivos", filePath, fileName)
+			download := ""
+			fileType := "folder"
+
+			//If it has an extension it is a file
+			if strings.Contains(fileName, ".") {
+				fileLink = fp.Join("download", filePath, fileName)
+				download = "download='" + fileName + "'"
 				fileType = "description"
 			}
 
 			//Transform files into html
-			htmlStr = htmlStr + "<div class='item'>" +
+			htmlStr = htmlStr + "<a href='/" + fileLink + "' " + download + " class='item'>" +
 				"<span class='material-icons'>" +
 				fileType +
 				"</span>" +
 				"<div class='name'>" +
 				fileName +
 				"</div>" +
-				"</div>"
-
-			//Send the template
+				"</a>"
 
 		}
 		html := template.HTML(htmlStr)

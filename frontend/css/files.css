@@ -58,6 +58,23 @@ input{
 .items .item {
     display: flex;
     padding-left: 30px;
+    text-decoration: none;
+}
+
+body.dark-theme .items .item {
+    color: var(--dark-theme-color);
+}
+
+body.dark-theme .items .item:focus {
+    color: var(--dark-theme-color-highlight);
+}
+
+body.light-theme .items .item {
+    color: var(--light-theme-color);
+}
+
+body.light-theme .items .item:focus {
+    color: var(--light-theme-color-highlight);
 }
 
 .item .name{
