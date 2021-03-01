@@ -1,7 +1,7 @@
 package main
 
 import (
-	"hd-virtual-plus-plus/routes"
+	"hd-virtual-plus-plus/src/libs/routes"
 	"html/template"
 
 	"github.com/gofiber/fiber/v2"

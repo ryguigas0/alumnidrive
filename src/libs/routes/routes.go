@@ -2,7 +2,7 @@ package routes
 
 import (
 	"fmt"
-	"hd-virtual-plus-plus/filefinder"
+	"hd-virtual-plus-plus/src/libs/filefinder"
 	"html/template"
 	"log"
 	"os"
