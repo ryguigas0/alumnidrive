@@ -1,4 +1,4 @@
-module hd-virtual++
+module hd-virtual-plus-plus
 
 go 1.15
 

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/frontend/css/global.css">
+    <link rel="stylesheet" href="/frontend/css/addFileForm.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>HD Virtual ++</title>
+    <script src="/frontend/js/theme-switch.js" defer></script>
+</head>
+
+<body class="dark-theme">
+    <button id="toggle-theme" onclick="switchThemes()">
+        <img src="/frontend/icons/lightbulb-on.svg" id="theme-icon" alt="Tema claro">
+    </button>
+    <h1>Adicionar um arquivo ou pasta em {{.Path}}</h1>
+    <form action="/add" method="POST">
+        <input type="hidden" id="filepath" name="filepath" value="{{.Path}}">
+        <div class="container">
+            <label for="filename">Nome:</label>
+            <input id="filename" name="filename" type="text" placeholder="arquivo.ext" required>
+        </div>
+
+        <div class="container">
+            <label for="filetype">Tipo:</label>
+            <select name="filetype" id="filetype">
+                <option value="file">Arquivo</option>
+                <option value="dir">Pasta</option>
+            </select>
+        </div>
+
+        <div class="container">
+            <label for="filedata">
+                <span class="material-icons">
+                    upload
+                </span>
+            </label>
+            <input type="file" name="filedata" id="filedata" required>
+        </div>
+
+        <button type="submit">Adicionar</button>
+    </form>
+</body>
+
+</html>

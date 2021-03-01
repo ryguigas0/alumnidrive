@@ -16,7 +16,7 @@
 
 <body class="dark-theme">
     <div class="search-box">
-        <input class="search-text" type="text" placeholder="Pesquisar nessa pasta...">
+        <input class="search-text" type="text" placeholder="Pesquisar por ID...">
         <a class="search-btn" href="#">
             <span class="material-icons">
                 search
@@ -31,6 +31,13 @@
     <div class="items">
         {{.Files}}
     </div>
+
+    <a class="add-item-redir" href="/add/{{.Path}}">
+        <span class="material-icons">
+            add_circle_outline
+        </span>
+    </a>
+
 </body>
 
 </html>

@@ -1,0 +1,9 @@
+input#filedata{
+    visibility: hidden;
+    height: 0%;
+    width: 0%;
+}
+
+.container{
+    padding-top: 20px;
+}

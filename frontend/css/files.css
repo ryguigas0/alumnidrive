@@ -1,8 +1,3 @@
-/* body{
-    margin: 0px;
-    padding: 0px;
-}
- */
 .material-icons{
     font-size: 25;
 }
@@ -13,6 +8,14 @@ body.dark-theme .material-icons{
 
 body.light-theme .material-icons{
     color: var(--light-theme-color);
+}
+
+body.dark-theme .material-icons:hover{
+    color: var(--dark-theme-color-highlight);
+}
+
+body.light-theme .material-icons:hover{
+    color: var(--light-theme-color-highlight);
 }
 
 .search-box{
@@ -79,4 +82,15 @@ body.light-theme .items .item:focus {
 
 .item .name{
     padding-left: 10px;
+}
+
+.add-item-redir {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    transition: color 5ms;
+}
+
+.add-item-redir .material-icons{
+    font-size: 250%;
 }
