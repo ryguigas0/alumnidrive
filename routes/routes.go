@@ -5,7 +5,8 @@ import (
 	"hd-virtual-plus-plus/filefinder"
 	"html/template"
 	"log"
-	"path/filepath"
+	"os"
+	fp "path/filepath"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -31,13 +32,13 @@ func Files(c *fiber.Ctx) error {
 	for _, fileName := range fileNames {
 
 		//Default file is a folder
-		fileLink := filepath.Join("arquivos", filePath, fileName)
+		fileLink := fp.Join("arquivos", filePath, fileName)
 		download := ""
 		fileType := "folder"
 
 		//If it has an extension it is a file
 		if strings.Contains(fileName, ".") {
-			fileLink = filepath.Join("download", filePath, fileName)
+			fileLink = fp.Join("download", filePath, fileName)
 			download = "download='" + fileName + "'"
 			fileType = "description"
 		}
@@ -62,22 +63,54 @@ func Files(c *fiber.Ctx) error {
 
 //AddFilesForm Add files or folders to a form and send
 func AddFilesForm(c *fiber.Ctx) error {
-	local := c.Params("*")
-	if len(local) == 0 {
-		local = "pasta inicial"
+	pathDir := c.Params("*")
+	pathName := pathDir
+	if len(pathDir) == 0 {
+		pathDir = ""
+		pathName = "pasta inicial"
 	}
 	return c.Render("addFileForm", fiber.Map{
-		"Path": local,
+		"PathName": pathName,
+		"PathDir":  pathDir,
 	})
 }
 
 //SaveFiles Save files from form and tag them with their id
 func SaveFiles(c *fiber.Ctx) error {
-	filename := c.FormValue("filename")
-	filetype := c.FormValue("filetype")
-	filepath := c.FormValue("filepath")
-	filedata := c.FormValue("filedata")
-	return c.Send([]byte(fmt.Sprintf("%v %v %v %v", filename, filetype, filepath, filedata)))
+	addpath := c.FormValue("addpath")
+	addtype := c.FormValue("addtype")
+
+	if addtype == "dir" {
+		dirname := c.FormValue("dirname")
+
+		if dirname == "" {
+			c.Request().Header.Add("error", "missing-dirname")
+			return c.Redirect("/add/" + addpath)
+		}
+
+		savepath := fp.Join("uploads", addpath, strings.ReplaceAll(dirname, " ", "_"))
+		if err := os.Mkdir(savepath, 0755); err != nil {
+			log.Fatalf("ERROR: SAVE DIR: %v\n", err)
+			return c.Redirect("/add/" + addpath)
+		}
+		log.Output(1, fmt.Sprintf("%v %v %v", dirname, addtype, savepath))
+	} else {
+		filedata, err := c.FormFile("filedata")
+		if err != nil {
+			log.Fatalf("ERROR: FILE UPLOAD: %v\n", err)
+			c.Request().Header.Add("error", "missing-file")
+			return c.Redirect("/add/" + addpath)
+		}
+
+		savepath := fp.Join("uploads", addpath, strings.ReplaceAll(filedata.Filename, " ", "_"))
+		if err = c.SaveFile(filedata, savepath); err != nil {
+			log.Fatalf("ERROR: SAVE UPLOAD: %v\n", err)
+			return c.Redirect("/add/" + addpath)
+		}
+		log.Output(1, fmt.Sprintf("%v %v %v", filedata.Filename, addtype, savepath))
+	}
+
+	return c.Redirect("/arquivos/" + addpath)
 }
 
 //Login login the user and give access to uploaded files

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/template/html"
 	//"github.com/gofiber/fiber/v2/middleware/basicauth"
 )
@@ -29,6 +30,7 @@ func main() {
 	// }))
 
 	app.Use(logger.New())
+	app.Use(recover.New())
 	app.Static("/frontend", "./frontend")
 	app.Static("/icons", "./frontend/icons")
 	app.Static("/download", "./uploads")

@@ -10,35 +10,37 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>HD Virtual ++</title>
     <script src="/frontend/js/theme-switch.js" defer></script>
+    <script src="/frontend/js/add-form.js" defer></script>
 </head>
 
 <body class="dark-theme">
     <button id="toggle-theme" onclick="switchThemes()">
         <img src="/frontend/icons/lightbulb-on.svg" id="theme-icon" alt="Tema claro">
     </button>
-    <h1>Adicionar um arquivo ou pasta em {{.Path}}</h1>
-    <form action="/add" method="POST">
-        <input type="hidden" id="filepath" name="filepath" value="{{.Path}}">
-        <div class="container">
-            <label for="filename">Nome:</label>
-            <input id="filename" name="filename" type="text" placeholder="arquivo.ext" required>
-        </div>
+    <h1>Adicionar um arquivo ou pasta em {{.PathName}}</h1>
+    <form action="/add" method="POST" enctype="multipart/form-data">
+        <input type="hidden" id="addpath" name="addpath" value="{{.PathDir}}">
 
         <div class="container">
-            <label for="filetype">Tipo:</label>
-            <select name="filetype" id="filetype">
-                <option value="file">Arquivo</option>
+            <label for="addtype">Tipo:</label>
+            <select name="addtype" id="addtype" onchange="getOpts()" required>
                 <option value="dir">Pasta</option>
+                <option value="file">Arquivo</option>
             </select>
         </div>
 
-        <div class="container">
+        <div class="container" id="dir-opts">
+            <label for="dirname">Nome:</label>
+            <input id="dirname" name="dirname" type="text" placeholder="pasta">
+        </div>
+
+        <div class="container" id="file-opts" style="visibility: hidden;">
             <label for="filedata">
                 <span class="material-icons">
                     upload
                 </span>
             </label>
-            <input type="file" name="filedata" id="filedata" required>
+            <input type="file" name="filedata" id="filedata">
         </div>
 
         <button type="submit">Adicionar</button>
