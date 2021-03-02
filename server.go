@@ -1,7 +1,7 @@
 package main
 
 import (
-	"hd-virtual-plus-plus/src/libs/routes"
+	"hd-virtual-plus-plus/src/routes"
 	"html/template"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,26 +14,16 @@ import (
 var templates *template.Template
 
 func main() {
-	engine := html.New("./frontend/template", ".html")
+	engine := html.New("./src/frontend/template", ".html")
 	app := fiber.New(fiber.Config{
 		Views: engine,
 	})
 
-	//USE ONLY IF ALL FAILS
-	// app.Use(basicauth.New(basicauth.Config{
-	// 	Users: map[string]string{
-	// 		"nome.aluno@p4ed.com": "SenhaDiscreta9876",
-	// 	},
-	// 	Authorizer: func(user, passwd string) bool {
-	// 		return user == "nome.aluno@p4ed.com" || passwd == "SenhaDiscreta9876"
-	// 	},
-	// }))
-
 	app.Use(logger.New())
 	app.Use(recover.New())
-	app.Static("/frontend", "./frontend")
-	app.Static("/icons", "./frontend/icons")
-	app.Static("/download", "./uploads")
+	app.Static("/frontend", "./src/frontend")
+	app.Static("/icons", "./src/frontend/icons")
+	app.Static("/download", "./src/uploads")
 
 	app.Get("/", routes.Index)
 	app.Get("/arquivos/*", routes.Files)

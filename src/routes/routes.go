@@ -2,7 +2,7 @@ package routes
 
 import (
 	"fmt"
-	"hd-virtual-plus-plus/src/libs/filefinder"
+	"hd-virtual-plus-plus/src/fileman"
 	"html/template"
 	"log"
 	"os"
@@ -17,29 +17,30 @@ func Index(c *fiber.Ctx) error {
 	if c.FormValue("auth") == "false" {
 		log.Output(1, "USER OR PASSWORD WRONG")
 	}
-	return c.SendFile("./frontend/html/login.html", false)
+	return c.SendFile("./src/frontend/html/login.html", false)
 }
 
 //Files serve files to user based on url path
 func Files(c *fiber.Ctx) error {
 	filePath := c.Params("*")
-	fileNames, err := filefinder.FindFiles("uploads/" + filePath)
+	fileModels, err := fileman.FindFiles("uploads/" + filePath)
 	if err != nil {
 		log.Fatalf("ERROR: FILE FINDER: %v\n", err)
-		return c.SendFile("frontend/html/fileNotFound.html")
+		return c.SendFile("./src/frontend/html/fileNotFound.html")
 	}
 	htmlStr := ""
-	for _, fileName := range fileNames {
+	for _, fileModel := range fileModels {
 
-		//Default file is a folder
-		fileLink := fp.Join("arquivos", filePath, fileName)
+		//Default value is folder
+		filename := fileModel.Name
+		fileLink := fp.Join("arquivos", filePath, filename)
 		download := ""
 		fileType := "folder"
 
-		//If it has an extension it is a file
-		if strings.Contains(fileName, ".") {
-			fileLink = fp.Join("download", filePath, fileName)
-			download = "download='" + fileName + "'"
+		//If it is not a folder, set to file
+		if !fileModel.IsDir {
+			fileLink = fp.Join("download", filePath, filename)
+			download = "download='" + filename + "'"
 			fileType = "description"
 		}
 
@@ -49,7 +50,7 @@ func Files(c *fiber.Ctx) error {
 			fileType +
 			"</span>" +
 			"<div class='name'>" +
-			fileName +
+			filename +
 			"</div>" +
 			"</a>"
 
@@ -87,7 +88,6 @@ func SaveFiles(c *fiber.Ctx) error {
 			c.Request().Header.Add("error", "missing-dirname")
 			return c.Redirect("/add/" + addpath)
 		}
-
 		savepath := fp.Join("uploads", addpath, strings.ReplaceAll(dirname, " ", "_"))
 		if err := os.Mkdir(savepath, 0755); err != nil {
 			log.Fatalf("ERROR: SAVE DIR: %v\n", err)
