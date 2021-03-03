@@ -18,7 +18,7 @@ func Index(c *fiber.Ctx) error {
 	if c.FormValue("auth") == "false" {
 		log.Output(1, "USER OR PASSWORD WRONG")
 	}
-	return c.SendFile("./src/frontend/html/login.html", false)
+	return c.Render("login", fiber.Map{})
 }
 
 //Files serve files to user based on url path
@@ -28,7 +28,7 @@ func Files(c *fiber.Ctx) error {
 
 	if err != nil {
 		log.Fatalf("ERROR: FILE FINDER: %v\n", err)
-		return c.SendFile("./src/frontend/html/fileNotFound.html")
+		return c.Render("fileNotFound", fiber.Map{})
 	}
 	htmlStr := ""
 	for _, fileModel := range fileModels {
