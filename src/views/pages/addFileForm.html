@@ -5,17 +5,17 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/frontend/css/global.css">
-    <link rel="stylesheet" href="/frontend/css/addFileForm.css">
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/addFileForm.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>HD Virtual ++</title>
-    <script src="/frontend/js/theme-switch.js" defer></script>
-    <script src="/frontend/js/add-form.js" defer></script>
+    <script src="js/theme-switch.js" defer></script>
+    <script src="js/add-form.js" defer></script>
 </head>
 
 <body class="dark-theme">
     <button id="toggle-theme" onclick="switchThemes()">
-        <img src="/frontend/icons/lightbulb-on.svg" id="theme-icon" alt="Tema claro">
+        <img src="/icons/lightbulb-on.svg" id="theme-icon" alt="Tema claro">
     </button>
     <h1>Adicionar um arquivo ou pasta em {{.PathName}}</h1>
     <form action="/add" method="POST" enctype="multipart/form-data">

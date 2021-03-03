@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"hd-virtual-plus-plus/src/database"
 	"hd-virtual-plus-plus/src/fileman"
 	"html/template"
 	"log"
@@ -24,6 +25,7 @@ func Index(c *fiber.Ctx) error {
 func Files(c *fiber.Ctx) error {
 	filePath := c.Params("*")
 	fileModels, err := fileman.FindFiles("uploads/" + filePath)
+
 	if err != nil {
 		log.Fatalf("ERROR: FILE FINDER: %v\n", err)
 		return c.SendFile("./src/frontend/html/fileNotFound.html")
@@ -36,6 +38,7 @@ func Files(c *fiber.Ctx) error {
 		fileLink := fp.Join("arquivos", filePath, filename)
 		download := ""
 		fileType := "folder"
+		fileID := database.GetFiles(database.GetDB("database.db"), filename, 0)[0].ID
 
 		//If it is not a folder, set to file
 		if !fileModel.IsDir {
@@ -51,6 +54,9 @@ func Files(c *fiber.Ctx) error {
 			"</span>" +
 			"<div class='name'>" +
 			filename +
+			"</div>" +
+			"<div class='id'>" +
+			fmt.Sprint(fileID) +
 			"</div>" +
 			"</a>"
 
@@ -80,6 +86,8 @@ func AddFilesForm(c *fiber.Ctx) error {
 func SaveFiles(c *fiber.Ctx) error {
 	addpath := c.FormValue("addpath")
 	addtype := c.FormValue("addtype")
+	db := database.GetDB("database.db")
+	defer db.Close()
 
 	if addtype == "dir" {
 		dirname := c.FormValue("dirname")
@@ -88,12 +96,14 @@ func SaveFiles(c *fiber.Ctx) error {
 			c.Request().Header.Add("error", "missing-dirname")
 			return c.Redirect("/add/" + addpath)
 		}
+
 		savepath := fp.Join("uploads", addpath, strings.ReplaceAll(dirname, " ", "_"))
 		if err := os.Mkdir(savepath, 0755); err != nil {
 			log.Fatalf("ERROR: SAVE DIR: %v\n", err)
 			return c.Redirect("/add/" + addpath)
 		}
 		log.Output(1, fmt.Sprintf("%v %v %v", dirname, addtype, savepath))
+		database.InsertFile(savepath, db)
 	} else {
 		filedata, err := c.FormFile("filedata")
 		if err != nil {
@@ -108,6 +118,7 @@ func SaveFiles(c *fiber.Ctx) error {
 			return c.Redirect("/add/" + addpath)
 		}
 		log.Output(1, fmt.Sprintf("%v %v %v", filedata.Filename, addtype, savepath))
+		database.InsertFile(savepath, db)
 	}
 
 	return c.Redirect("/arquivos/" + addpath)

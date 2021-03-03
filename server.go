@@ -14,16 +14,18 @@ import (
 var templates *template.Template
 
 func main() {
-	engine := html.New("./src/frontend/template", ".html")
+	engine := html.New("./src/views/pages", ".html")
 	app := fiber.New(fiber.Config{
 		Views: engine,
 	})
 
 	app.Use(logger.New())
 	app.Use(recover.New())
-	app.Static("/frontend", "./src/frontend")
-	app.Static("/icons", "./src/frontend/icons")
-	app.Static("/download", "./src/uploads")
+
+	app.Static("css", "./src/views/css")
+	app.Static("js", "./src/views/js")
+	app.Static("icons", "./src/views/icons")
+	app.Static("download", "./src/uploads")
 
 	app.Get("/", routes.Index)
 	app.Get("/arquivos/*", routes.Files)

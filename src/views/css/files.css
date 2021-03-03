@@ -84,6 +84,10 @@ body.light-theme .items .item:focus {
     padding-left: 10px;
 }
 
+.item .id{
+    margin-left: 10px;
+}
+
 .add-item-redir {
     position: absolute;
     right: 10px;
