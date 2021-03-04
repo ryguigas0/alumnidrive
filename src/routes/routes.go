@@ -31,10 +31,12 @@ func Files(c *fiber.Ctx) error {
 	files := database.GetFilesInPath(db, path)
 
 	htmlStr := ""
+	msgStr := ""
+	hideFiles := ""
 	for _, file := range files {
 
 		//Default value is folder
-		fileLink := fp.Join("arquivos", path, file.Name)
+		fileLink := fp.Join("files", path, file.Name)
 		download := ""
 		fileType := "folder"
 
@@ -46,23 +48,28 @@ func Files(c *fiber.Ctx) error {
 		}
 
 		//Transform files into html
-		htmlStr = htmlStr + "<a href='/" + fileLink + "' " + download + " class='item'>" +
-			"<span class='material-icons'>" +
-			fileType +
-			"</span>" +
-			"<div class='name'>" +
-			file.Name +
-			"</div>" +
-			"<div class='id'>" +
-			fmt.Sprint(file.ID) +
-			"</div>" +
-			"</a>"
+		htmlStr = htmlStr + "<tr class='item'>" +
+			"<td class='id'>" + fmt.Sprint(file.ID) + "</td>" +
+			"<td class='name'>" +
+			"<a href='/" + fileLink + "' " + download + ">" +
+			"<span class='material-icons'>" + fileType + "</span>" +
+			"<div>" + file.Name + "</div>" +
+			"</a>" +
+			"</td>" +
+			"</tr>"
 
 	}
-	html := template.HTML(htmlStr)
+
+	if htmlStr == "" {
+		msgStr = "<h1>Não foram encontrados arquivos</h1>"
+		hideFiles = "hidden"
+	}
+
 	return c.Render("files", fiber.Map{
-		"Files": html,
-		"Path":  path,
+		"Files":       template.HTML(htmlStr),
+		"MsgNotFound": template.HTML(msgStr),
+		"FilesHidden": hideFiles,
+		"Path":        path,
 	})
 }
 
@@ -114,7 +121,7 @@ func SaveFiles(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.Redirect("/arquivos/" + addpath)
+	return c.Redirect("/files/" + addpath)
 }
 
 //Login login the user and give access to uploaded files
@@ -128,7 +135,7 @@ func Login(c *fiber.Ctx) error {
 	// 	return c.Redirect("../", fiber.StatusUnauthorized)
 	// }
 
-	return c.Redirect("/arquivos")
+	return c.Redirect("/files")
 }
 
 //DownloadFile download a saved file
@@ -141,14 +148,65 @@ func DownloadFile(c *fiber.Ctx) error {
 //SearchFiles finds a file to download or a folder to access
 func SearchFiles(c *fiber.Ctx) error {
 	idStr := c.Query("id", "0")
+	name := c.Query("name", "")
 	idInt, _ := strconv.Atoi(idStr)
 
-	file := database.GetFileByID(database.GetDB("database.db"), int64(idInt))
-	if file.ID == 0 {
-		return c.Render("fileNotFound", fiber.Map{})
+	if idInt != 0 {
+		file := database.GetFileByID(database.GetDB("database.db"), int64(idInt))
+		if file.IsDir == 0 {
+			return c.Redirect("/files/" + file.Path + file.Name)
+		}
+		return c.Redirect("/download/" + file.DownloadName)
+	} else if name != "" {
+		files := database.GetFilesByName(database.GetDB("database.db"), name)
+		if len(files) == 0 {
+			return c.Render("files", fiber.Map{
+				"Files":       "",
+				"MsgNotFound": template.HTML("<h1>Nenhum arquivo tem esse nome</h1>"),
+				"FilesHidden": "hidden",
+				"Path":        "",
+			})
+		}
+
+		htmlStr := ""
+		for _, file := range files {
+
+			//Default value is folder
+			fileLink := fp.Join("files", file.Path, file.Name)
+			download := ""
+			fileType := "folder"
+
+			//If it is not a folder, set to file
+			if file.IsDir != 0 {
+				fileLink = fp.Join("download", file.DownloadName)
+				download = "download='" + file.Name + "'"
+				fileType = "description"
+			}
+
+			//Transform files into html
+			htmlStr = htmlStr + "<tr class='item'>" +
+				"<td class='id'>" + fmt.Sprint(file.ID) + "</td>" +
+				"<td class='name'>" +
+				"<a href='/" + fileLink + "' " + download + ">" +
+				"<span class='material-icons'>" + fileType + "</span>" +
+				"<div>" + file.Name + "</div>" +
+				"</a>" +
+				"</td>" +
+				"</tr>"
+
+		}
+
+		return c.Render("files", fiber.Map{
+			"Files":       template.HTML(htmlStr),
+			"MsgNotFound": "",
+			"FilesHidden": "",
+			"Path":        "",
+		})
 	}
-	if file.IsDir == 0 {
-		return c.Redirect("/arquivos/" + file.Path + file.Name)
-	}
-	return c.Redirect("/download/" + file.DownloadName)
+	return c.Render("files", fiber.Map{
+		"Files":       "",
+		"MsgNotFound": template.HTML("<h1>Coloque um id ou nome para procurar um arquivo</h1>"),
+		"FilesHidden": "hidden",
+		"Path":        "",
+	})
 }

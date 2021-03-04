@@ -58,30 +58,35 @@ input{
     border-bottom: none !important;
 }
 
-.items .item {
-    display: flex;
-    padding-left: 30px;
-    text-decoration: none;
+.items{
+    border-spacing: 20px 0;
 }
 
-body.dark-theme .items .item {
+.items .item {
+    padding-left: 30px;
+}
+
+body.dark-theme .items .item .name a{
     color: var(--dark-theme-color);
 }
 
-body.dark-theme .items .item:focus {
+body.dark-theme .items .item .name a:focus {
     color: var(--dark-theme-color-highlight);
 }
 
-body.light-theme .items .item {
+body.light-theme .items .item .name a{
     color: var(--light-theme-color);
 }
 
-body.light-theme .items .item:focus {
+body.light-theme .items .item .name a:focus {
     color: var(--light-theme-color-highlight);
 }
 
-.item .name{
-    padding-left: 10px;
+.item .name a{
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    text-decoration: none;
 }
 
 .item .id{

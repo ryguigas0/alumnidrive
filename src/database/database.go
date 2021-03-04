@@ -84,7 +84,13 @@ func GetFileByID(db *sql.DB, id int64) FileModel {
 
 //GetFilesInPath finds all files that match a certain path from the begining
 func GetFilesInPath(db *sql.DB, path string) []FileModel {
-	rows, err := db.Query("select * from files where path like '%" + path + "'")
+	queryStr := ""
+	if path == "" {
+		queryStr = "select * from files where path like ''"
+	} else {
+		queryStr = "select * from files where path like '%" + path + "'"
+	}
+	rows, err := db.Query(queryStr)
 	if err != nil {
 		log.Output(1, fmt.Sprintf("ERR: NO FILE W/ PATH: %v\n", err))
 	}
@@ -107,6 +113,22 @@ func GetFileByDownloadName(db *sql.DB, downloadname string) FileModel {
 	var file FileModel
 	row.Scan(&file.ID, &file.Path, &file.Name, &file.IsDir, &file.DownloadName)
 	return file
+}
+
+//GetFilesByName finds all files with that contains the name
+func GetFilesByName(db *sql.DB, name string) []FileModel {
+	rows, err := db.Query("select * from files where name like '%" + name + "%'")
+	if err != nil {
+		log.Output(1, fmt.Sprint(err))
+		return nil
+	}
+	var files []FileModel
+	for rows.Next() {
+		var file FileModel
+		rows.Scan(&file.ID, &file.Path, &file.Name, &file.IsDir, &file.DownloadName)
+		files = append(files, file)
+	}
+	return files
 }
 
 /* //DeleteFile Deletes a file entry based on id or matching path

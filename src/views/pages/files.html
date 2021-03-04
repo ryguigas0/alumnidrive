@@ -16,7 +16,7 @@
 
 <body class="dark-theme">
     <div class="search-box">
-        <input class="search-text" type="text" placeholder="Pesquisar por ID...">
+        <input class="search-text" type="text" placeholder="Pesquisar por ID ou nome...">
         <a class="search-btn" href="#">
             <span class="material-icons">
                 search
@@ -28,9 +28,15 @@
         <img src="/frontend/lightbulb-on.svg" id="theme-icon" alt="Tema claro">
     </button>
 
-    <div class="items">
+    {{.MsgNotFound}}
+
+    <table class="items" {{.FilesHidden}}>
+        <tr class="headers">
+            <th>ID do arquivo</th>
+            <th>Nome do arquivo</th>
+        </tr>
         {{.Files}}
-    </div>
+    </table>
 
     <a class="add-item-redir" href="/add/{{.Path}}">
         <span class="material-icons">

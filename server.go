@@ -22,12 +22,12 @@ func main() {
 	app.Use(logger.New())
 	app.Use(recover.New())
 
-	app.Static("/frontend/", "./src/views/css/")
-	app.Static("/frontend/", "./src/views/js/")
-	app.Static("/frontend/", "./src/views/icons/")
+	app.Static("frontend", "src/views/css")
+	app.Static("frontend", "src/views/js")
+	app.Static("frontend", "src/views/icons")
 
 	app.Get("/", routes.Index)
-	app.Get("/arquivos/*", routes.Files)
+	app.Get("/files/*", routes.Files)
 	app.Get("/download/*", routes.DownloadFile)
 	app.Post("/login", routes.Login)
 	app.Get("/add/*", routes.AddFilesForm)
