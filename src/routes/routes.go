@@ -3,11 +3,11 @@ package routes
 import (
 	"fmt"
 	"hd-virtual-plus-plus/src/database"
-	"hd-virtual-plus-plus/src/fileman"
 	"html/template"
 	"log"
-	"os"
+	"math/rand"
 	fp "path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,27 +23,24 @@ func Index(c *fiber.Ctx) error {
 
 //Files serve files to user based on url path
 func Files(c *fiber.Ctx) error {
-	filePath := c.Params("*")
-	fileModels, err := fileman.FindFiles("uploads/" + filePath)
+	path := c.Params("*")
 
-	if err != nil {
-		log.Fatalf("ERROR: FILE FINDER: %v\n", err)
-		return c.Render("fileNotFound", fiber.Map{})
-	}
+	db := database.GetDB("database.db")
+	defer db.Close()
+	files := database.GetFilesInPath(db, path)
+
 	htmlStr := ""
-	for _, fileModel := range fileModels {
+	for _, file := range files {
 
 		//Default value is folder
-		filename := fileModel.Name
-		fileLink := fp.Join("arquivos", filePath, filename)
+		fileLink := fp.Join("arquivos", path, file.Name)
 		download := ""
 		fileType := "folder"
-		fileID := database.GetFiles(database.GetDB("database.db"), filename, 0)[0].ID
 
 		//If it is not a folder, set to file
-		if !fileModel.IsDir {
-			fileLink = fp.Join("download", filePath, filename)
-			download = "download='" + filename + "'"
+		if file.IsDir != 0 {
+			fileLink = fp.Join("download", file.DownloadName)
+			download = "download='" + file.Name + "'"
 			fileType = "description"
 		}
 
@@ -53,10 +50,10 @@ func Files(c *fiber.Ctx) error {
 			fileType +
 			"</span>" +
 			"<div class='name'>" +
-			filename +
+			file.Name +
 			"</div>" +
 			"<div class='id'>" +
-			fmt.Sprint(fileID) +
+			fmt.Sprint(file.ID) +
 			"</div>" +
 			"</a>"
 
@@ -64,7 +61,7 @@ func Files(c *fiber.Ctx) error {
 	html := template.HTML(htmlStr)
 	return c.Render("files", fiber.Map{
 		"Files": html,
-		"Path":  filePath,
+		"Path":  path,
 	})
 }
 
@@ -97,13 +94,7 @@ func SaveFiles(c *fiber.Ctx) error {
 			return c.Redirect("/add/" + addpath)
 		}
 
-		savepath := fp.Join("uploads", addpath, strings.ReplaceAll(dirname, " ", "_"))
-		if err := os.Mkdir(savepath, 0755); err != nil {
-			log.Fatalf("ERROR: SAVE DIR: %v\n", err)
-			return c.Redirect("/add/" + addpath)
-		}
-		log.Output(1, fmt.Sprintf("%v %v %v", dirname, addtype, savepath))
-		database.InsertFile(savepath, db)
+		database.InsertFile(addpath, dirname, dirname, 0, db)
 	} else {
 		filedata, err := c.FormFile("filedata")
 		if err != nil {
@@ -111,14 +102,14 @@ func SaveFiles(c *fiber.Ctx) error {
 			c.Request().Header.Add("error", "missing-file")
 			return c.Redirect("/add/" + addpath)
 		}
+		newName := strings.Split(strings.ReplaceAll(filedata.Filename, " ", "_"), ".")
+		downloadName := newName[0] + strconv.Itoa(rand.Intn(999)) + "." + newName[1]
+		database.InsertFile(addpath, filedata.Filename, downloadName, 1, db)
 
-		savepath := fp.Join("uploads", addpath, strings.ReplaceAll(filedata.Filename, " ", "_"))
-		if err = c.SaveFile(filedata, savepath); err != nil {
-			log.Fatalf("ERROR: SAVE UPLOAD: %v\n", err)
-			return c.Redirect("/add/" + addpath)
+		err = c.SaveFile(filedata, "./uploads/"+downloadName)
+		if err != nil {
+			log.Fatal(err)
 		}
-		log.Output(1, fmt.Sprintf("%v %v %v", filedata.Filename, addtype, savepath))
-		database.InsertFile(savepath, db)
 	}
 
 	return c.Redirect("/arquivos/" + addpath)
@@ -136,4 +127,12 @@ func Login(c *fiber.Ctx) error {
 	// }
 
 	return c.Redirect("/arquivos")
+}
+
+//DownloadFile download a saved file
+func DownloadFile(c *fiber.Ctx) error {
+	downloadName := c.Params("*")
+	file := database.GetFileByDownloadName(database.GetDB("database.db"), downloadName)
+	return c.Download("./uploads/" + file.DownloadName)
+	//return c.Redirect("/arquivos/" + file.Path)
 }

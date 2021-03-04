@@ -25,10 +25,10 @@ func main() {
 	app.Static("css", "./src/views/css")
 	app.Static("js", "./src/views/js")
 	app.Static("icons", "./src/views/icons")
-	app.Static("download", "./src/uploads")
 
 	app.Get("/", routes.Index)
 	app.Get("/arquivos/*", routes.Files)
+	app.Get("/download/*", routes.DownloadFile)
 	app.Post("/login", routes.Login)
 	app.Get("/add/*", routes.AddFilesForm)
 	app.Post("/add/", routes.SaveFiles)
