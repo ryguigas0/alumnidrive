@@ -9,6 +9,7 @@ import (
 	fp "path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -103,6 +104,7 @@ func SaveFiles(c *fiber.Ctx) error {
 			return c.Redirect("/add/" + addpath)
 		}
 		newName := strings.Split(strings.ReplaceAll(filedata.Filename, " ", "_"), ".")
+		rand.Seed(time.Now().Unix())
 		downloadName := newName[0] + strconv.Itoa(rand.Intn(999)) + "." + newName[1]
 		database.InsertFile(addpath, filedata.Filename, downloadName, 1, db)
 
@@ -134,5 +136,19 @@ func DownloadFile(c *fiber.Ctx) error {
 	downloadName := c.Params("*")
 	file := database.GetFileByDownloadName(database.GetDB("database.db"), downloadName)
 	return c.Download("./uploads/" + file.DownloadName)
-	//return c.Redirect("/arquivos/" + file.Path)
+}
+
+//SearchFiles finds a file to download or a folder to access
+func SearchFiles(c *fiber.Ctx) error {
+	idStr := c.Query("id", "0")
+	idInt, _ := strconv.Atoi(idStr)
+
+	file := database.GetFileByID(database.GetDB("database.db"), int64(idInt))
+	if file.ID == 0 {
+		return c.Render("fileNotFound", fiber.Map{})
+	}
+	if file.IsDir == 0 {
+		return c.Redirect("/arquivos/" + file.Path + file.Name)
+	}
+	return c.Redirect("/download/" + file.DownloadName)
 }

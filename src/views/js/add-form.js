@@ -1,3 +1,4 @@
+console.log("LOADED ADD FORM")
 var opts = document.querySelector("select#addtype")
 var dirOpts = document.querySelector("#dir-opts")
 var fileOpts = document.querySelector("#file-opts")
