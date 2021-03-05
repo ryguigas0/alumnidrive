@@ -22,21 +22,40 @@ func Index(c *fiber.Ctx) error {
 	return c.Render("login", fiber.Map{})
 }
 
-//Files serve files to user based on url path
-func Files(c *fiber.Ctx) error {
-	path := c.Params("*")
+//AddFilesForm Add files or folders to a form and send
+func AddFilesForm(c *fiber.Ctx) error {
+	pathDir := c.Params("*")
+	pathName := pathDir
+	if len(pathDir) == 0 {
+		pathDir = ""
+		pathName = "pasta inicial"
+	}
+	return c.Render("addFileForm", fiber.Map{
+		"PathName": pathName,
+		"PathDir":  pathDir,
+	})
+}
 
-	db := database.GetDB("database.db")
-	defer db.Close()
-	files := database.GetFilesInPath(db, path)
+//Login login the user and give access to uploaded files
+func Login(c *fiber.Ctx) error {
+	username := c.FormValue("username")
+	passwd := c.FormValue("password")
 
-	htmlStr := ""
-	msgStr := ""
-	hideFiles := ""
+	log.Output(0, username)
+	log.Output(0, passwd)
+	// if username != "john" || passwd != "doe" {
+	// 	return c.Redirect("../", fiber.StatusUnauthorized)
+	// }
+
+	return c.Redirect("/files")
+}
+
+//filesToHTML turns a file list into html
+func filesToHTML(files []database.FileModel) (htmlStr, msgStr, hideFiles string) {
 	for _, file := range files {
 
 		//Default value is folder
-		fileLink := fp.Join("files", path, file.Name)
+		fileLink := fp.Join("files", file.Path, file.Name)
 		download := ""
 		fileType := "folder"
 
@@ -57,7 +76,6 @@ func Files(c *fiber.Ctx) error {
 			"</a>" +
 			"</td>" +
 			"</tr>"
-
 	}
 
 	if htmlStr == "" {
@@ -65,25 +83,19 @@ func Files(c *fiber.Ctx) error {
 		hideFiles = "hidden"
 	}
 
+	return
+}
+
+//Files return all files within a path
+func Files(c *fiber.Ctx) error {
+	path := c.Params("*")
+	files := database.GetFilesInPath(database.GetDB(("database.db")), path)
+	htmlStr, msgStr, hideFiles := filesToHTML(files)
 	return c.Render("files", fiber.Map{
 		"Files":       template.HTML(htmlStr),
 		"MsgNotFound": template.HTML(msgStr),
 		"FilesHidden": hideFiles,
 		"Path":        path,
-	})
-}
-
-//AddFilesForm Add files or folders to a form and send
-func AddFilesForm(c *fiber.Ctx) error {
-	pathDir := c.Params("*")
-	pathName := pathDir
-	if len(pathDir) == 0 {
-		pathDir = ""
-		pathName = "pasta inicial"
-	}
-	return c.Render("addFileForm", fiber.Map{
-		"PathName": pathName,
-		"PathDir":  pathDir,
 	})
 }
 
@@ -124,27 +136,6 @@ func SaveFiles(c *fiber.Ctx) error {
 	return c.Redirect("/files/" + addpath)
 }
 
-//Login login the user and give access to uploaded files
-func Login(c *fiber.Ctx) error {
-	username := c.FormValue("username")
-	passwd := c.FormValue("password")
-
-	log.Output(0, username)
-	log.Output(0, passwd)
-	// if username != "john" || passwd != "doe" {
-	// 	return c.Redirect("../", fiber.StatusUnauthorized)
-	// }
-
-	return c.Redirect("/files")
-}
-
-//DownloadFile download a saved file
-func DownloadFile(c *fiber.Ctx) error {
-	downloadName := c.Params("*")
-	file := database.GetFileByDownloadName(database.GetDB("database.db"), downloadName)
-	return c.Download("./uploads/" + file.DownloadName)
-}
-
 //SearchFiles finds a file to download or a folder to access
 func SearchFiles(c *fiber.Ctx) error {
 	idStr := c.Query("id", "0")
@@ -159,47 +150,11 @@ func SearchFiles(c *fiber.Ctx) error {
 		return c.Redirect("/download/" + file.DownloadName)
 	} else if name != "" {
 		files := database.GetFilesByName(database.GetDB("database.db"), name)
-		if len(files) == 0 {
-			return c.Render("files", fiber.Map{
-				"Files":       "",
-				"MsgNotFound": template.HTML("<h1>Nenhum arquivo tem esse nome</h1>"),
-				"FilesHidden": "hidden",
-				"Path":        "",
-			})
-		}
-
-		htmlStr := ""
-		for _, file := range files {
-
-			//Default value is folder
-			fileLink := fp.Join("files", file.Path, file.Name)
-			download := ""
-			fileType := "folder"
-
-			//If it is not a folder, set to file
-			if file.IsDir != 0 {
-				fileLink = fp.Join("download", file.DownloadName)
-				download = "download='" + file.Name + "'"
-				fileType = "description"
-			}
-
-			//Transform files into html
-			htmlStr = htmlStr + "<tr class='item'>" +
-				"<td class='id'>" + fmt.Sprint(file.ID) + "</td>" +
-				"<td class='name'>" +
-				"<a href='/" + fileLink + "' " + download + ">" +
-				"<span class='material-icons'>" + fileType + "</span>" +
-				"<div>" + file.Name + "</div>" +
-				"</a>" +
-				"</td>" +
-				"</tr>"
-
-		}
-
+		htmlStr, msgStr, hideFiles := filesToHTML(files)
 		return c.Render("files", fiber.Map{
 			"Files":       template.HTML(htmlStr),
-			"MsgNotFound": "",
-			"FilesHidden": "",
+			"MsgNotFound": template.HTML(msgStr),
+			"FilesHidden": hideFiles,
 			"Path":        "",
 		})
 	}
@@ -209,4 +164,11 @@ func SearchFiles(c *fiber.Ctx) error {
 		"FilesHidden": "hidden",
 		"Path":        "",
 	})
+}
+
+//DownloadFile download a saved file
+func DownloadFile(c *fiber.Ctx) error {
+	downloadName := c.Params("*")
+	file := database.GetFileByDownloadName(database.GetDB("database.db"), downloadName)
+	return c.Download("./uploads/" + file.DownloadName)
 }
