@@ -26,7 +26,7 @@ func GetDB(path string) *sql.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
-	stmt, err := db.Prepare("create table if not exists files (id integer primary key unique, path text, name text, isdir int, downloadname text unique)")
+	stmt, err := db.Prepare("create table if not exists files (id integer primary key unique, path text, name text, isdir int, downloadname text)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,13 +84,7 @@ func GetFileByID(db *sql.DB, id int64) FileModel {
 
 //GetFilesInPath finds all files that match a certain path from the begining
 func GetFilesInPath(db *sql.DB, path string) []FileModel {
-	queryStr := ""
-	if path == "" {
-		queryStr = "select * from files where path like ''"
-	} else {
-		queryStr = "select * from files where path like '%" + path + "'"
-	}
-	rows, err := db.Query(queryStr)
+	rows, err := db.Query("select * from files where path like '" + path + "'")
 	if err != nil {
 		log.Output(1, fmt.Sprintf("ERR: NO FILE W/ PATH: %v\n", err))
 	}
@@ -131,9 +125,9 @@ func GetFilesByName(db *sql.DB, name string) []FileModel {
 	return files
 }
 
-/* //DeleteFile Deletes a file entry based on id or matching path
-func DeleteFile(db *sql.DB, pattern string, id int) {
-	stmt, err := db.Prepare("delete from files where path LIKE '%" + pattern + "%' or id = ?")
+//DeleteFile Deletes a file entry based on id or matching path
+func DeleteFile(db *sql.DB, id int64) {
+	stmt, err := db.Prepare("delete from files where id = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -143,4 +137,3 @@ func DeleteFile(db *sql.DB, pattern string, id int) {
 	}
 	return
 }
-*/

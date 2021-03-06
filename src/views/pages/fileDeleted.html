@@ -15,38 +15,17 @@
 </head>
 
 <body class="dark-theme">
-    <div class="search-box">
-        <input class="search-text" type="text" placeholder="Pesquisar por ID ou nome...">
-        <a class="search-btn" href="#">
-            <span class="material-icons">
-                search
-            </span>
-        </a>
-    </div>
-
     <button id="toggle-theme" onclick="switchThemes()">
         <img src="/static/lightbulb-on.svg" id="theme-icon" alt="Tema claro">
     </button>
 
     {{.Mensage}}
 
-    <table class="items" {{.FilesHidden}}>
-        <tr class="headers">
-            <th>ID do arquivo</th>
-            <th>Nome do arquivo</th>
-            <th></th>
-        </tr>
-        {{.Files}}
-    </table>
-
-    <div class="options">
-        <a class="add-item-redir" href="/add/{{.Path}}">
-            <span class="material-icons">
-                add_circle_outline
-            </span>
-        </a>
-        {{.OutPath}}
-    </div>
+    <a class="add-item-redir" href="/files/{{.Path}}">
+        <span class="material-icons">
+            arrow_back
+        </span>
+    </a>
 
 </body>
 

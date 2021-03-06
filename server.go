@@ -22,9 +22,9 @@ func main() {
 	app.Use(logger.New())
 	app.Use(recover.New())
 
-	app.Static("frontend", "src/views/css")
-	app.Static("frontend", "src/views/js")
-	app.Static("frontend", "src/views/icons")
+	app.Static("static", "src/views/css")
+	app.Static("static", "src/views/js")
+	app.Static("static", "src/views/icons")
 
 	app.Get("/", routes.Index)
 	app.Get("/files/*", routes.Files)
@@ -33,6 +33,7 @@ func main() {
 	app.Get("/add/*", routes.AddFilesForm)
 	app.Post("/add/", routes.SaveFiles)
 	app.Get("/search", routes.SearchFiles)
+	app.Post("/remove", routes.DeleteFile)
 
 	app.Listen(":3000")
 }

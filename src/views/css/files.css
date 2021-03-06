@@ -93,13 +93,20 @@ body.light-theme .items .item .name a:focus {
     margin-left: 10px;
 }
 
-.add-item-redir {
+.options {
     position: absolute;
     right: 10px;
     bottom: 10px;
     transition: color 5ms;
+    display: flex;
+    flex-direction: row-reverse;
 }
 
 .add-item-redir .material-icons{
+    font-size: 250%;
+}
+
+
+.out-path-redir .material-icons{
     font-size: 250%;
 }

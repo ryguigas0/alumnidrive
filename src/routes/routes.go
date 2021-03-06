@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"log"
 	"math/rand"
+	"os"
+	"path/filepath"
 	fp "path/filepath"
 	"strconv"
 	"strings"
@@ -75,6 +77,12 @@ func filesToHTML(files []database.FileModel) (htmlStr, msgStr, hideFiles string)
 			"<div>" + file.Name + "</div>" +
 			"</a>" +
 			"</td>" +
+			"<td>" +
+			"<form method='post' action='/remove'>" +
+			"<input type='hidden' name='id' value='" + fmt.Sprint(file.ID) + "'>" +
+			"<span class='material-icons' onclick='this.parentNode.submit();'> do_not_disturb_on </span>" +
+			"</form>" +
+			"</td>" +
 			"</tr>"
 	}
 
@@ -89,13 +97,25 @@ func filesToHTML(files []database.FileModel) (htmlStr, msgStr, hideFiles string)
 //Files return all files within a path
 func Files(c *fiber.Ctx) error {
 	path := c.Params("*")
+	outPathHTMLStr := ""
+	if path != "" {
+		outPath := strings.Split(path, "/")
+		outPathStr := filepath.Join(outPath[:len(outPath)-1]...)
+		outPathHTMLStr = "<a class='out-path-redir' href='/files/" + outPathStr + "'>" +
+			"<span class='material-icons'>" +
+			"arrow_back" +
+			"</span>" +
+			"</a>"
+	}
+
 	files := database.GetFilesInPath(database.GetDB(("database.db")), path)
 	htmlStr, msgStr, hideFiles := filesToHTML(files)
 	return c.Render("files", fiber.Map{
 		"Files":       template.HTML(htmlStr),
-		"MsgNotFound": template.HTML(msgStr),
+		"Mensage":     template.HTML(msgStr),
 		"FilesHidden": hideFiles,
 		"Path":        path,
+		"OutPath":     template.HTML(outPathHTMLStr),
 	})
 }
 
@@ -136,6 +156,47 @@ func SaveFiles(c *fiber.Ctx) error {
 	return c.Redirect("/files/" + addpath)
 }
 
+func deleteSavedFile(file database.FileModel) {
+	db := database.GetDB("database.db")
+	if file.IsDir != 0 {
+		err := os.Remove(filepath.Join(".", "uploads", file.DownloadName))
+		if err != nil {
+			log.Output(1, fmt.Sprint("Can't delete file: ", err))
+		}
+	} else {
+		files := database.GetFilesInPath(db, filepath.Join(file.Path, file.Name))
+		for _, file := range files {
+			deleteSavedFile(file)
+		}
+	}
+	database.DeleteFile(db, file.ID)
+}
+
+//DeleteFile deletes a file with its id
+func DeleteFile(c *fiber.Ctx) error {
+	idStr := c.FormValue("id", "0")
+	idInt, _ := strconv.Atoi(idStr)
+	if idInt != 0 {
+		db := database.GetDB("database.db")
+		file := database.GetFileByID(db, int64(idInt))
+
+		deleteSavedFile(file)
+
+		msgStr := "<h1>O arquivo " + idStr + " foi deletado!</h1>"
+		if file.IsDir == 0 {
+			msgStr = "<h1>A pasta " + idStr + " e seus conteúdos foram deletados!</h1>"
+		}
+
+		return c.Render("fileDeleted", fiber.Map{
+			"Mensage": template.HTML(msgStr),
+			"Path":    file.Path,
+		})
+	}
+	return c.Render("files", fiber.Map{
+		"Mensage": template.HTML("<h1>ID inválido!</h1>"),
+	})
+}
+
 //SearchFiles finds a file to download or a folder to access
 func SearchFiles(c *fiber.Ctx) error {
 	idStr := c.Query("id", "0")
@@ -153,14 +214,14 @@ func SearchFiles(c *fiber.Ctx) error {
 		htmlStr, msgStr, hideFiles := filesToHTML(files)
 		return c.Render("files", fiber.Map{
 			"Files":       template.HTML(htmlStr),
-			"MsgNotFound": template.HTML(msgStr),
+			"Mensage":     template.HTML(msgStr),
 			"FilesHidden": hideFiles,
 			"Path":        "",
 		})
 	}
 	return c.Render("files", fiber.Map{
 		"Files":       "",
-		"MsgNotFound": template.HTML("<h1>Coloque um id ou nome para procurar um arquivo</h1>"),
+		"Mensage":     template.HTML("<h1>Coloque um id ou nome para procurar um arquivo</h1>"),
 		"FilesHidden": "hidden",
 		"Path":        "",
 	})
