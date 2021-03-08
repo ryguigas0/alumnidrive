@@ -97,18 +97,6 @@ func GetFilesInPath(db *sql.DB, path string) []FileModel {
 	return files
 }
 
-//GetFileByDownloadName finds a file with the same download name provided
-func GetFileByDownloadName(db *sql.DB, downloadname string) FileModel {
-	row := db.QueryRow("select * from files where downloadname like ?", downloadname)
-	if row.Err() != nil {
-		log.Output(1, fmt.Sprintf("ERR: NO FILE W/ ID: %v\n", row.Err()))
-		return FileModel{}
-	}
-	var file FileModel
-	row.Scan(&file.ID, &file.Path, &file.Name, &file.IsDir, &file.DownloadName)
-	return file
-}
-
 //GetFilesByName finds all files with that contains the name
 func GetFilesByName(db *sql.DB, name string) []FileModel {
 	rows, err := db.Query("select * from files where name like '%" + name + "%'")

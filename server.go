@@ -17,6 +17,8 @@ func main() {
 	engine := html.New("./src/views/pages", ".html")
 	app := fiber.New(fiber.Config{
 		Views: engine,
+		//MAX FILE SIZE: 100MB
+		BodyLimit: 100 * 1024 * 1024,
 	})
 
 	app.Use(logger.New())
@@ -29,10 +31,10 @@ func main() {
 	app.Get("/", routes.Index)
 	app.Get("/files/*", routes.Files)
 	app.Get("/download/*", routes.DownloadFile)
-	app.Post("/login", routes.Login)
 	app.Get("/add/*", routes.AddFilesForm)
-	app.Post("/add/", routes.SaveFiles)
 	app.Get("/search", routes.SearchFiles)
+	app.Post("/login", routes.Login)
+	app.Post("/add/", routes.SaveFiles)
 	app.Post("/remove", routes.DeleteFile)
 
 	app.Listen(":3000")

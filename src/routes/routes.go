@@ -63,7 +63,7 @@ func filesToHTML(files []database.FileModel) (htmlStr, msgStr, hideFiles string)
 
 		//If it is not a folder, set to file
 		if file.IsDir != 0 {
-			fileLink = fp.Join("download", file.DownloadName)
+			fileLink = fp.Join("download", fmt.Sprint(file.ID))
 			download = "download='" + file.Name + "'"
 			fileType = "description"
 		}
@@ -145,7 +145,7 @@ func SaveFiles(c *fiber.Ctx) error {
 		newName := strings.Split(strings.ReplaceAll(filedata.Filename, " ", "_"), ".")
 		rand.Seed(time.Now().Unix())
 		downloadName := newName[0] + strconv.Itoa(rand.Intn(999)) + "." + newName[1]
-		database.InsertFile(addpath, filedata.Filename, downloadName, 1, db)
+		database.InsertFile(addpath, strings.Join([]string{newName[0], newName[1]}, "."), downloadName, 1, db)
 
 		err = c.SaveFile(filedata, "./uploads/"+downloadName)
 		if err != nil {
@@ -208,7 +208,7 @@ func SearchFiles(c *fiber.Ctx) error {
 		if file.IsDir == 0 {
 			return c.Redirect("/files/" + file.Path + file.Name)
 		}
-		return c.Redirect("/download/" + file.DownloadName)
+		return c.Redirect("/download/" + fmt.Sprint(file.ID))
 	} else if name != "" {
 		files := database.GetFilesByName(database.GetDB("database.db"), name)
 		htmlStr, msgStr, hideFiles := filesToHTML(files)
@@ -229,7 +229,8 @@ func SearchFiles(c *fiber.Ctx) error {
 
 //DownloadFile download a saved file
 func DownloadFile(c *fiber.Ctx) error {
-	downloadName := c.Params("*")
-	file := database.GetFileByDownloadName(database.GetDB("database.db"), downloadName)
+	idStr := c.Params("*", "0")
+	idInt, _ := strconv.Atoi(idStr)
+	file := database.GetFileByID(database.GetDB("database.db"), int64(idInt))
 	return c.Download("./uploads/" + file.DownloadName)
 }
