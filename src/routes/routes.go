@@ -16,11 +16,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+var errMap map[string]string = map[string]string{
+	"dir":  "The directory has no name",
+	"file": "The file is empty",
+	"name": "This name is already taken",
+}
+
 //Index Load login page, with or without warning of wrong user or password
 func Index(c *fiber.Ctx) error {
-	if c.FormValue("auth") == "false" {
-		log.Output(1, "USER OR PASSWORD WRONG")
-	}
+	//c.Cookie(&fiber.Cookie{Name: "darktheme", Value: "1"})
 	return c.Render("login", fiber.Map{})
 }
 
@@ -32,9 +36,11 @@ func AddFilesForm(c *fiber.Ctx) error {
 		pathDir = ""
 		pathName = "pasta inicial"
 	}
+	errMsg := c.Query("err", "")
 	return c.Render("addFileForm", fiber.Map{
 		"PathName": pathName,
 		"PathDir":  pathDir,
+		"ErrorMsg": errMap[errMsg],
 	})
 }
 
@@ -130,19 +136,21 @@ func SaveFiles(c *fiber.Ctx) error {
 		dirname := c.FormValue("dirname")
 
 		if dirname == "" {
-			c.Request().Header.Add("error", "missing-dirname")
-			return c.Redirect("/add/" + addpath)
+			return c.Redirect("/add/" + addpath + "?err=dir")
 		}
-
+		if filesWithName := database.GetFilesByName(db, dirname); len(filesWithName) != 0 {
+			return c.Redirect("/add/" + addpath + "?err=name")
+		}
 		database.InsertFile(addpath, dirname, dirname, 0, db)
 	} else {
 		filedata, err := c.FormFile("filedata")
 		if err != nil {
-			log.Fatalf("ERROR: FILE UPLOAD: %v\n", err)
-			c.Request().Header.Add("error", "missing-file")
-			return c.Redirect("/add/" + addpath)
+			return c.Redirect("/add/" + addpath + "?err=file")
 		}
 		newName := strings.Split(strings.ReplaceAll(filedata.Filename, " ", "_"), ".")
+		if filesWithName := database.GetFilesByName(db, strings.Join([]string{newName[0], newName[1]}, ".")); len(filesWithName) != 0 {
+			return c.Redirect("/add/" + addpath + "?err=name")
+		}
 		rand.Seed(time.Now().Unix())
 		downloadName := newName[0] + strconv.Itoa(rand.Intn(999)) + "." + newName[1]
 		database.InsertFile(addpath, strings.Join([]string{newName[0], newName[1]}, "."), downloadName, 1, db)

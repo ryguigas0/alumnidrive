@@ -19,6 +19,7 @@ func main() {
 		Views: engine,
 		//MAX FILE SIZE: 100MB
 		BodyLimit: 100 * 1024 * 1024,
+		Prefork:   true,
 	})
 
 	app.Use(logger.New())

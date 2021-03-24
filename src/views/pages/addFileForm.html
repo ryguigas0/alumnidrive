@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/static/global.css">
     <link rel="stylesheet" href="/static/addFileForm.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title>HD Virtual ++</title>
+    <title>AnonDrive</title>
     <script src="/static/theme-switch.js" defer></script>
     <script src="/static/add-form.js" defer></script>
 </head>
@@ -20,7 +20,7 @@
     <h1>Adicionar um arquivo ou pasta em {{.PathName}}</h1>
     <form action="/add" method="POST" enctype="multipart/form-data">
         <input type="hidden" id="addpath" name="addpath" value="{{.PathDir}}">
-
+        {{.ErrorMsg}}
         <div class="container">
             <label for="addtype">Tipo:</label>
             <select name="addtype" id="addtype" onchange="getOpts()" required>
