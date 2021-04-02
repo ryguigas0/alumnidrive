@@ -1,4 +1,4 @@
-package database
+package filebase
 
 import (
 	"database/sql"
@@ -26,7 +26,7 @@ func GetDB(path string) *sql.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
-	stmt, err := db.Prepare("create table if not exists files (id integer primary key unique, path text, name text unique, isdir int, downloadname text)")
+	stmt, err := db.Prepare("create table if not exists files (id integer primary key unique, path text, name text unique, isdir int, downloadname text, owner_id integer foreign key)")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"hd-virtual-plus-plus/src/routes"
+	"anondrive/src/routes"
 	"html/template"
 
 	"github.com/gofiber/fiber/v2"

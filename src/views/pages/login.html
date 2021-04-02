@@ -18,10 +18,11 @@
     <form action="/login" method="POST">
         <h1>AnonDrive</h1>
         <label for="username">Usuário:</label>
-        <input id="username" name="username" type="text" placeholder="nome.aluno@p4ed.com" value="john"><br>
+        <input id="username" name="username" type="text" placeholder="nome.aluno@p4ed.com" required><br>
         <label for="password">Senha:</label>
-        <input id="password" type="password" placeholder="SenhaDiscreta9876" value="doe" required><br>
+        <input id="password" type="password" placeholder="SenhaDiscreta9876" required><br>
         <button type="submit">Login</button>
+        <a href="/newuser">Criar uma conta</a>
     </form>
 </body>
 

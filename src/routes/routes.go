@@ -1,13 +1,12 @@
 package routes
 
 import (
+	"anondrive/src/filebase"
 	"fmt"
-	"hd-virtual-plus-plus/src/database"
 	"html/template"
 	"log"
 	"math/rand"
 	"os"
-	"path/filepath"
 	fp "path/filepath"
 	"strconv"
 	"strings"
@@ -59,7 +58,7 @@ func Login(c *fiber.Ctx) error {
 }
 
 //filesToHTML turns a file list into html
-func filesToHTML(files []database.FileModel) (htmlStr, msgStr, hideFiles string) {
+func filesToHTML(files []filebase.FileModel) (htmlStr, msgStr, hideFiles string) {
 	for _, file := range files {
 
 		//Default value is folder
@@ -106,7 +105,7 @@ func Files(c *fiber.Ctx) error {
 	outPathHTMLStr := ""
 	if path != "" {
 		outPath := strings.Split(path, "/")
-		outPathStr := filepath.Join(outPath[:len(outPath)-1]...)
+		outPathStr := fp.Join(outPath[:len(outPath)-1]...)
 		outPathHTMLStr = "<a class='out-path-redir' href='/files/" + outPathStr + "'>" +
 			"<span class='material-icons'>" +
 			"arrow_back" +
@@ -114,7 +113,7 @@ func Files(c *fiber.Ctx) error {
 			"</a>"
 	}
 
-	files := database.GetFilesInPath(database.GetDB(("database.db")), path)
+	files := filebase.GetFilesInPath(filebase.GetDB(("filebase.db")), path)
 	htmlStr, msgStr, hideFiles := filesToHTML(files)
 	return c.Render("files", fiber.Map{
 		"Files":       template.HTML(htmlStr),
@@ -129,7 +128,7 @@ func Files(c *fiber.Ctx) error {
 func SaveFiles(c *fiber.Ctx) error {
 	addpath := c.FormValue("addpath")
 	addtype := c.FormValue("addtype")
-	db := database.GetDB("database.db")
+	db := filebase.GetDB("filebase.db")
 	defer db.Close()
 
 	if addtype == "dir" {
@@ -138,22 +137,22 @@ func SaveFiles(c *fiber.Ctx) error {
 		if dirname == "" {
 			return c.Redirect("/add/" + addpath + "?err=dir")
 		}
-		if filesWithName := database.GetFilesByName(db, dirname); len(filesWithName) != 0 {
+		if filesWithName := filebase.GetFilesByName(db, dirname); len(filesWithName) != 0 {
 			return c.Redirect("/add/" + addpath + "?err=name")
 		}
-		database.InsertFile(addpath, dirname, dirname, 0, db)
+		filebase.InsertFile(addpath, dirname, dirname, 0, db)
 	} else {
 		filedata, err := c.FormFile("filedata")
 		if err != nil {
 			return c.Redirect("/add/" + addpath + "?err=file")
 		}
 		newName := strings.Split(strings.ReplaceAll(filedata.Filename, " ", "_"), ".")
-		if filesWithName := database.GetFilesByName(db, strings.Join([]string{newName[0], newName[1]}, ".")); len(filesWithName) != 0 {
+		if filesWithName := filebase.GetFilesByName(db, strings.Join([]string{newName[0], newName[1]}, ".")); len(filesWithName) != 0 {
 			return c.Redirect("/add/" + addpath + "?err=name")
 		}
 		rand.Seed(time.Now().Unix())
 		downloadName := newName[0] + strconv.Itoa(rand.Intn(999)) + "." + newName[1]
-		database.InsertFile(addpath, strings.Join([]string{newName[0], newName[1]}, "."), downloadName, 1, db)
+		filebase.InsertFile(addpath, strings.Join([]string{newName[0], newName[1]}, "."), downloadName, 1, db)
 
 		err = c.SaveFile(filedata, "./uploads/"+downloadName)
 		if err != nil {
@@ -164,20 +163,20 @@ func SaveFiles(c *fiber.Ctx) error {
 	return c.Redirect("/files/" + addpath)
 }
 
-func deleteSavedFile(file database.FileModel) {
-	db := database.GetDB("database.db")
+func deleteSavedFile(file filebase.FileModel) {
+	db := filebase.GetDB("filebase.db")
 	if file.IsDir != 0 {
-		err := os.Remove(filepath.Join(".", "uploads", file.DownloadName))
+		err := os.Remove(fp.Join(".", "uploads", file.DownloadName))
 		if err != nil {
 			log.Output(1, fmt.Sprint("Can't delete file: ", err))
 		}
 	} else {
-		files := database.GetFilesInPath(db, filepath.Join(file.Path, file.Name))
+		files := filebase.GetFilesInPath(db, fp.Join(file.Path, file.Name))
 		for _, file := range files {
 			deleteSavedFile(file)
 		}
 	}
-	database.DeleteFile(db, file.ID)
+	filebase.DeleteFile(db, file.ID)
 }
 
 //DeleteFile deletes a file with its id
@@ -185,8 +184,8 @@ func DeleteFile(c *fiber.Ctx) error {
 	idStr := c.FormValue("id", "0")
 	idInt, _ := strconv.Atoi(idStr)
 	if idInt != 0 {
-		db := database.GetDB("database.db")
-		file := database.GetFileByID(db, int64(idInt))
+		db := filebase.GetDB("filebase.db")
+		file := filebase.GetFileByID(db, int64(idInt))
 
 		deleteSavedFile(file)
 
@@ -212,13 +211,13 @@ func SearchFiles(c *fiber.Ctx) error {
 	idInt, _ := strconv.Atoi(idStr)
 
 	if idInt != 0 {
-		file := database.GetFileByID(database.GetDB("database.db"), int64(idInt))
+		file := filebase.GetFileByID(filebase.GetDB("filebase.db"), int64(idInt))
 		if file.IsDir == 0 {
 			return c.Redirect("/files/" + file.Path + file.Name)
 		}
 		return c.Redirect("/download/" + fmt.Sprint(file.ID))
 	} else if name != "" {
-		files := database.GetFilesByName(database.GetDB("database.db"), name)
+		files := filebase.GetFilesByName(filebase.GetDB("filebase.db"), name)
 		htmlStr, msgStr, hideFiles := filesToHTML(files)
 		return c.Render("files", fiber.Map{
 			"Files":       template.HTML(htmlStr),
@@ -239,6 +238,6 @@ func SearchFiles(c *fiber.Ctx) error {
 func DownloadFile(c *fiber.Ctx) error {
 	idStr := c.Params("*", "0")
 	idInt, _ := strconv.Atoi(idStr)
-	file := database.GetFileByID(database.GetDB("database.db"), int64(idInt))
+	file := filebase.GetFileByID(filebase.GetDB("filebase.db"), int64(idInt))
 	return c.Download("./uploads/" + file.DownloadName)
 }
